@@ -1,6 +1,6 @@
 # PaleoVoxPy
 
-**Version 1.0.7** – *Data Augmentation for 3D Fossils*
+**Version 1.0.8** – *Data Augmentation for 3D Fossils*
 
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -42,39 +42,87 @@ Place `paleovoxpy.py` in your project or import directly.
 ## 🚀 Quick Start
 
 ```python
-import paleovoxpy as pv
+from paleovoxpy import *
 
-# 1. Load a mesh
-_mesh, min_bound, max_bound, dimensions = pv.load_mesh(path, return_bounds= True)
+# 0. Set the path to your 3D fossil file (.obj, .ply, .stl, …)
+path = './my_fossil.obj'
 
-# 2. Convert to voxel grid (128³)
-voxels, scale_factor, orig_min, orig_max, orig_center = pv.mesh_to_voxel(
-    mesh = _mesh,
-    npoints = 10000,
-    dimensions = 128,
-    pr = True, 
-    return_scale_info= True
+# 1. Load mesh & get bounding info
+_mesh, min_bound, max_bound, dimensions = load_mesh(path, return_bounds=True)
+_mesh  # displays triangle mesh info
+```
+
+**Step 1 – Mesh to voxel conversion**
+
+```python
+# 2. Convert the mesh into a binary voxel grid (128³)
+_voxel, scale_factor, orig_min, orig_max, orig_center = mesh_to_voxel(
+    mesh=_mesh,
+    npoints=10000,
+    dimensions=128,
+    pr=True,
+    return_scale_info=True
 )
 
-# 2.1 [Optional but highly recommened]: Apply binary dilation to increase the point density in the voxel: 
-voxels = pv.binary_dilation(voxels, iterations = 5) # 5 often gives better results
+# 3. Visualise the voxel grid
+plot_voxels(_voxel, names=['Voxel'], colors=['blue'], title='There is a fossil!')
+```
 
-# 3. Apply compaction (simulate burial)
-compacted = pv.deformation(voxels, compaction_factor=0.85, compaction_axis=0)
+**Step 2 – Fill holes with binary dilation**  
 
-# 4. Add random fractures
-fractured = pv.propagator_fracture(compacted, max_position=10)
+```python
+# 4. Apply binary dilation to fill gaps and thicken the surface
+_dilation = binary_dilation(_voxel, iterations=3)
+plot_voxels(_dilation)
+```
 
-# 5. Reconstruct a mesh
-reconstructed = high_quality_voxel_to_mesh(
-                fractured, 
-                voxel_size=1.0,
-                target_scale=dimensions,  # Original dimensions
-                original_bounds=(orig_min, orig_max)  # Original position
-            )
+**Step 3 – Voxel to mesh reconstruction**
 
-# 6. Visualise
-pv.plot_meshes(_mesh, reconstructed, names=['Original', 'Augmented'])
+```python
+# 5. Reconstruct a high‑quality 3D mesh
+_mesh3d = high_quality_voxel_to_mesh(
+    _dilation,
+    voxel_size=1.0,
+    target_scale=dimensions,          # original dimensions
+    original_bounds=(orig_min, orig_max)  # original position
+)
+_mesh3d  # displays reconstructed mesh info
+```
+
+**Step 4 – Compare original vs. reconstructed**
+
+```python
+# 6. Side‑by‑side visualisation
+plot_meshes(_mesh3d, _mesh, names=['Reconstructed', 'Original'])
+```
+
+**Step 5 – Apply damage augmentations (optional)**
+
+```python
+# Compaction (simulate burial)
+compacted = deformation(_voxel, compaction_factor=0.7, compaction_axis=0)
+plot_voxels(_voxel, compacted, names=['Original', 'Compacted'])
+
+# Erosion
+eroded = erotion_general(_voxel, axis_idx=0, increment_min=0.5, pr=True)
+
+# Rotation
+import math
+rotated = rotate_voxel(_voxel, math.radians(15), math.radians(25), math.radians(10))
+
+# Fractures
+fractured, fractures_only = propagator_fracture(
+    _voxel, max_position=10, return_both=True, pr=True
+)
+plot_voxels(fractured, fractures_only)
+```
+
+**Step 6 – Save your results**
+
+```python
+# Save mesh and voxel to disk
+save_mesh(_mesh3d, './output.ply')
+save_voxel(_voxel, './output.npy')
 ```
 
 ---
@@ -186,9 +234,20 @@ This project is licensed under the **MIT License** – see the [LICENSE](LICENSE
 
 ---
 
+## 👥 Creators
+
+| Name | Institution | Email |
+|------|------------|-------|
+| Alan Gabriel Amaro Colin | Universidad Nacional Autónoma de México | alan_amaro@ciencias.unam.mx |
+| Angel Angeles Córtes | Universidad Nacional Autónoma de México | pendiente |
+| Dr. Jair | Universidad Nacional Autónoma de México | pendiente |
+| Dr. Jesus | Universidad Nacional Autónoma de México | pendiente |
+
+---
+
 ## 📧 Contact
 
-For questions or collaborations, please contact [alan_amaro@ciencias.unam.mx] or open an issue on GitHub.
+For questions or collaborations, please open an issue on GitHub or reach out to any of the creators above.
 
 ---
 
