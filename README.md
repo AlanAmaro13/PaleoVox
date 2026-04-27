@@ -28,6 +28,18 @@
 pip install open3d numpy scipy matplotlib seaborn plotly scikit-learn
 ```
 
+To use the GUI, also install PyQt5:
+
+```bash
+pip install PyQt5
+```
+
+Alternatively, install everything at once:
+
+```bash
+pip install -r requirements.txt
+```
+
 Clone the repository:
 
 ```bash
@@ -127,6 +139,37 @@ save_voxel(_voxel, './output.npy')
 
 ---
 
+## 🖥️ GUI Application
+
+PaleoVoxPy ships with a **drag-and-drop desktop GUI** built with `PyQt5` (`paleovox_gui.py`). No coding required — drop a `.ply` or `.obj` file, visualise, apply augmentations, and export results.
+
+### Launch
+
+```bash
+python3 paleovox_gui.py
+```
+
+### Layout
+
+| Panel | Contents |
+|-------|----------|
+| **Left** | Drop zone (drag .ply/.obj or click to browse), file info (vertices, triangles, voxel shape/occupancy) |
+| **Right — Pipeline** | Load Mesh → Mesh→Voxels (configurable `npoints`/`dim`) → Dilate Voxels → Voxels→Mesh |
+| **Right — Augmentations** | Deformation (axis + factor), Erosion (axis + increment), Rotation (X°/Y°/Z°), Fracture (max_pos + return both) |
+| **Right — View & Save** | Open3D pop-up views for mesh and voxels, save as .ply/.obj (mesh) or .npy (voxel) |
+
+### Workflow
+
+1. **Drop** a `.ply` or `.obj` fossil mesh onto the left panel
+2. Click **Mesh → Voxels** to convert (adjust `npoints` and `dim` as needed)
+3. Apply **augmentations** on the voxels: deformation, erosion, rotation, fracture
+4. **View** the result in an interactive Open3D window
+5. **Save** the modified mesh or voxel array
+
+All operations are wrapped in try/catch blocks with error dialogs and status-bar feedback.
+
+---
+
 ## 📚 Function Overview
 
 ### Core conversion
@@ -219,6 +262,7 @@ for obj_file in glob.glob("meshes/*.obj"):
 - [Seaborn](https://seaborn.pydata.org/) – style settings
 - [Plotly](https://plotly.com/python/) – interactive 3D plots
 - [scikit‑learn](https://scikit-learn.org/) – t‑SNE visualisation
+- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/) – **GUI** application (`paleovox_gui.py`)
 
 ---
 
